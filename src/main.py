@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.core.config import settings
 from src.api.v1.endpoints import auth, users, chats
+from src.api.v1.endpoints import websocket
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -22,6 +23,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
 app.include_router(users.router, prefix=settings.API_V1_PREFIX)
 app.include_router(chats.router, prefix=settings.API_V1_PREFIX)
+app.include_router(websocket.router, prefix="/ws", tags=["websocket"])
 
 @app.get("/")
 async def root():

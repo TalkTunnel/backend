@@ -98,3 +98,32 @@ class ChatService:
             "chat": chat,
             "messages": messages[::-1]  # Переворачиваем для хронологического порядка
         }
+        
+# Добавьте эти методы в существующий ChatService
+
+    async def check_participant(self, chat_id: int, user_id: int) -> bool:
+        """Проверка, является ли пользователь участником чата"""
+        result = await self.db.execute(
+            select(ChatParticipant)
+            .where(
+                ChatParticipant.chat_id == chat_id,
+                ChatParticipant.user_id == user_id
+            )
+        )
+        return result.scalar_one_or_none() is not None
+
+    async def get_chat_participants(self, chat_id: int) -> List[ChatParticipant]:
+        """Получение всех участников чата"""
+        result = await self.db.execute(
+            select(ChatParticipant)
+            .where(ChatParticipant.chat_id == chat_id)
+        )
+        return result.scalars().all()
+
+    async def get_chat_participant_ids(self, chat_id: int) -> List[int]:
+        """Получение ID всех участников чата"""
+        result = await self.db.execute(
+            select(ChatParticipant.user_id)
+            .where(ChatParticipant.chat_id == chat_id)
+        )
+        return result.scalars().all()
