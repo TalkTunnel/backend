@@ -4,4 +4,17 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "alembic>=1.18.4",
+    "asyncpg>=0.31.0",
+    "cryptography>=46.0.5",
+    "fastapi[all,standart]>=0.135.1",
+    "passlib[bcrypt]>=1.7.4",
+    "pydantic-settings>=2.13.1",
+    "python-dotenv>=1.2.2",
+    "python-jose[cryptography]>=3.5.0",
+    "redis>=7.3.0",
+    "sqlalchemy>=2.0.48",
+    "uvicorn>=0.42.0",
+    "websockets>=16.0",
+]
