@@ -1,7 +1,10 @@
-from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Optional
+
+from pydantic import BaseModel, ConfigDict, Field
+
 from src.schemas.user import UserPublic
+
 
 class ChatBase(BaseModel):
     type: str = Field(..., pattern="^(private|group|channel)$")
@@ -11,20 +14,23 @@ class ChatBase(BaseModel):
     is_encrypted: bool = True
     is_private: bool = False
 
-class ChatCreate(ChatBase):
-    participant_ids: List[int] = Field(..., min_length=1)  # ID участников
-    group_key_encrypted: Optional[str] = None  # Для групповых чатов
 
-class ChatResponse(ChatBase):
+class ChatCreate(ChatBase):
+    participant_ids: List[int] = Field(..., min_length=1)
+    group_key_encrypted: Optional[str] = None
+
+
+class ChatResponse(BaseModel):
+    """Соответствует ORM-модели Chat (без ленивых relationship в async)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
-    created_by: Optional[int]
+    type: str
+    name: Optional[str] = None
+    is_encrypted: bool
     created_at: datetime
-    updated_at: datetime
-    participants: List[UserPublic]
-    unread_count: Optional[int] = 0
-    
-    class Config:
-        from_attributes = True
+    updated_at: Optional[datetime] = None
 
 class ChatParticipantResponse(BaseModel):
     chat_id: int

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from src.core.database import get_db
-from src.schemas.chat import ChatResponse, ChatCreate
+from src.schemas.chat import ChatResponse
 from src.schemas.message import MessageResponse
 from src.services.chat_service import ChatService
 from src.api.deps import get_current_user

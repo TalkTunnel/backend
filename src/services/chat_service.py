@@ -1,35 +1,26 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import intersect, select, and_
 from typing import List, Optional
 from src.models.chat import Chat, ChatParticipant
 from src.models.user import User
 from src.models.message import Message
-from src.schemas.chat import ChatCreate
-
 class ChatService:
     def __init__(self, db: AsyncSession):
         self.db = db
     
     async def create_private_chat(self, user1_id: int, user2_id: int) -> Chat:
         """Создание личного чата"""
-        # Проверяем, существует ли уже чат между этими пользователями
-        existing = await self.db.execute(
-            select(Chat).join(ChatParticipant).where(
-                and_(
-                    Chat.type == "private",
-                    ChatParticipant.user_id.in_([user1_id, user2_id])
-                )
-            ).group_by(Chat.id).having(
-                Chat.id.in_(
-                    select(ChatParticipant.chat_id)
-                    .where(ChatParticipant.user_id.in_([user1_id, user2_id]))
-                    .group_by(ChatParticipant.chat_id)
-                    .having(ChatParticipant.user_id.count() == 2)
-                )
-            )
+        # Уже есть приватный чат, где состоят оба пользователя (пересечение chat_id)
+        shared_chat_ids = intersect(
+            select(ChatParticipant.chat_id).where(ChatParticipant.user_id == user1_id),
+            select(ChatParticipant.chat_id).where(ChatParticipant.user_id == user2_id),
         )
-        
-        existing_chat = existing.first()
+        existing = await self.db.execute(
+            select(Chat)
+            .where(Chat.type == "private", Chat.id.in_(shared_chat_ids))
+            .limit(1)
+        )
+        existing_chat = existing.scalar_one_or_none()
         if existing_chat:
             return existing_chat
         
