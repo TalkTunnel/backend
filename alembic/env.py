@@ -5,6 +5,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
+from src.core.config import settings
 from src.core.database import Base
 import src.models  # noqa: F401 — регистрирует таблицы в Base.metadata для autogenerate
 
@@ -12,6 +13,9 @@ config = context.config
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+# URL БД только из .env (src.core.config), не из alembic.ini
+config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 target_metadata = Base.metadata
 
