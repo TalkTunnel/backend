@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.core.config import settings
+from src.api.v1.endpoints import auth, users, chats
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -11,15 +12,20 @@ app = FastAPI(
 # CORS настройки для React
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React dev server
+    allow_origins=["http://localhost:3000", "http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Подключаем роутеры
+app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
+app.include_router(users.router, prefix=settings.API_V1_PREFIX)
+app.include_router(chats.router, prefix=settings.API_V1_PREFIX)
+
 @app.get("/")
 async def root():
-    return {"message": "Messenger API", "status": "running"}
+    return {"message": "Secure Messenger API", "status": "running"}
 
 @app.get("/health")
 async def health_check():
