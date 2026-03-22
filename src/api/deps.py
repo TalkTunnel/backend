@@ -32,14 +32,22 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    user_id: int = payload.get("sub")
-    if not user_id:
+    sub = payload.get("sub")
+    if sub is None or sub == "":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token payload",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+    try:
+        user_id = int(sub)
+    except (TypeError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     # Получение пользователя из БД
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
