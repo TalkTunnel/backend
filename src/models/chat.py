@@ -13,8 +13,16 @@ class ChatParticipant(Base):
     joined_at = Column(DateTime, default=func.now())
     last_read_message_id = Column(Integer, nullable=True)
 
-    chat = relationship("Chat", back_populates="participant_links")
-    user = relationship("User", back_populates="chat_memberships")
+    chat = relationship(
+        "Chat",
+        back_populates="participant_links",
+        overlaps="chats,participants,chat_memberships",
+    )
+    user = relationship(
+        "User",
+        back_populates="chat_memberships",
+        overlaps="chats,participants,participant_links",
+    )
 
 
 class Chat(Base):
@@ -34,5 +42,5 @@ class Chat(Base):
         "User",
         secondary="chat_participants",
         back_populates="chats",
-        overlaps="chat_memberships,participant_links",
+        overlaps="participant_links,chat_memberships,chat,user",
     )

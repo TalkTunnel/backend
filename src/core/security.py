@@ -1,19 +1,26 @@
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
+
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+
 from src.core.config import settings
 
-# Настройка хеширования паролей
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Проверка пароля"""
-    return pwd_context.verify(plain_password, hashed_password)
+    """Проверка пароля (совместимо с хешами passlib/bcrypt)."""
+    return bcrypt.checkpw(
+        plain_password.encode("utf-8"),
+        hashed_password.encode("utf-8"),
+    )
+
 
 def get_password_hash(password: str) -> str:
-    """Хеширование пароля"""
-    return pwd_context.hash(password)
+    """Хеширование пароля (bcrypt, лимит 72 байта на пароль)."""
+    pw = password.encode("utf-8")
+    if len(pw) > 72:
+        pw = pw[:72]
+    return bcrypt.hashpw(pw, bcrypt.gensalt()).decode("utf-8")
 
 def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
     """Создание access токена"""
