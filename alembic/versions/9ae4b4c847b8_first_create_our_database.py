@@ -9,8 +9,8 @@ from typing import Sequence, Union
 
 from alembic import op
 
-import src.models  # noqa: F401
 from src.core.database import Base
+import src.models  # noqa: F401 — после Base, чтобы не было циклического импорта
 
 
 # revision identifiers, used by Alembic.

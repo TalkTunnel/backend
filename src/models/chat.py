@@ -1,26 +1,38 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Table
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from src.core.database import Base
 
-# Таблица участников чатов (many-to-many)
-chat_participants = Table(
-    "chat_participants",
-    Base.metadata,
-    Column("chat_id", Integer, ForeignKey("chats.id"), primary_key=True),
-    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
-    Column("joined_at", DateTime, default=func.now()),
-    Column("last_read_message_id", Integer, nullable=True)
-)
+
+class ChatParticipant(Base):
+    __tablename__ = "chat_participants"
+
+    chat_id = Column(Integer, ForeignKey("chats.id"), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    role = Column(String(20), nullable=False, default="member")
+    joined_at = Column(DateTime, default=func.now())
+    last_read_message_id = Column(Integer, nullable=True)
+
+    chat = relationship("Chat", back_populates="participant_links")
+    user = relationship("User", back_populates="chat_memberships")
+
 
 class Chat(Base):
     __tablename__ = "chats"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     type = Column(String(20), nullable=False)  # 'private' или 'group'
     name = Column(String(100), nullable=True)  # для групповых чатов
-    
+    is_encrypted = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, default=func.now())
-    
-    # Relationships
-    participants = relationship("User", secondary=chat_participants, backref="chats")
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    participant_links = relationship(
+        "ChatParticipant", back_populates="chat", cascade="all, delete-orphan"
+    )
+    participants = relationship(
+        "User",
+        secondary="chat_participants",
+        back_populates="chats",
+        overlaps="chat_memberships,participant_links",
+    )

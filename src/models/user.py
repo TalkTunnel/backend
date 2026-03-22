@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from src.core.database import Base
 
@@ -16,3 +17,13 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     last_seen = Column(DateTime, default=func.now(), onupdate=func.now())
     created_at = Column(DateTime, default=func.now())
+
+    chat_memberships = relationship(
+        "ChatParticipant", back_populates="user", overlaps="chats,participants"
+    )
+    chats = relationship(
+        "Chat",
+        secondary="chat_participants",
+        back_populates="participants",
+        overlaps="chat_memberships,participant_links",
+    )

@@ -16,20 +16,8 @@ AsyncSessionLocal = async_sessionmaker(
 
 Base = declarative_base()
 
-# Импортируем все модели для создания таблиц
-from src.models import (
-    User,
-    Chat,
-    ChatParticipant,
-    Message,
-    MessageDelivery,
-    Attachment,
-    Reaction,
-    GroupKey,
-    Session,
-    Notification,
-    Block,
-)
+# Регистрируем модели в Base.metadata (без from … import — избегаем циклического импорта)
+import src.models  # noqa: F401
 
 async def get_db():
     async with AsyncSessionLocal() as session:
