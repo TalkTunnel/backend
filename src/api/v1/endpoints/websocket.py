@@ -13,10 +13,11 @@ import logging
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+
 @router.websocket("/ws")
 async def websocket_endpoint(
     websocket: WebSocket,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """WebSocket эндпоинт для real-time сообщений"""
     
@@ -31,12 +32,16 @@ async def websocket_endpoint(
         await websocket.close(code=1008, reason="Invalid token")
         return
     
-    user_id = payload.get("sub")
-    if not user_id:
+    sub = payload.get("sub")
+    if sub is None or sub == "":
         await websocket.close(code=1008, reason="Invalid token payload")
         return
-    
-    # Подключаем пользователя
+    try:
+        user_id = int(sub)
+    except (TypeError, ValueError):
+        await websocket.close(code=1008, reason="Invalid token payload")
+        return
+
     await manager.connect(websocket, user_id)
     
     # Инициализируем сервисы
@@ -50,13 +55,17 @@ async def websocket_endpoint(
             event_type = data.get("event")
             
             if event_type == "send_message":
-                # Отправка сообщения
                 chat_id = data.get("chat_id")
                 encrypted_content = data.get("encrypted_content")
                 reply_to_id = data.get("reply_to_id")
                 message_type = data.get("message_type", "text")
-                
-                # Проверяем доступ к чату
+                if chat_id is None or encrypted_content is None:
+                    await websocket.send_json(
+                        {"event": "error", "data": {"message": "chat_id and encrypted_content required"}}
+                    )
+                    continue
+                chat_id = int(chat_id)
+
                 participant = await chat_service.check_participant(chat_id, user_id)
                 if not participant:
                     await websocket.send_json({
@@ -71,7 +80,7 @@ async def websocket_endpoint(
                     sender_id=user_id,
                     encrypted_content=encrypted_content,
                     message_type=message_type,
-                    reply_to_id=reply_to_id
+                    reply_to_id=int(reply_to_id) if reply_to_id is not None else None,
                 )
                 
                 # Получаем всех участников чата
@@ -103,10 +112,12 @@ async def websocket_endpoint(
                 })
             
             elif event_type == "typing":
-                # Индикатор набора текста
                 chat_id = data.get("chat_id")
+                if chat_id is None:
+                    continue
+                chat_id = int(chat_id)
                 is_typing = data.get("is_typing", True)
-                
+
                 participants = await chat_service.get_chat_participants(chat_id)
                 
                 typing_data = {
@@ -123,10 +134,11 @@ async def websocket_endpoint(
                         await manager.send_personal_message(typing_data, participant.user_id)
             
             elif event_type == "read_receipt":
-                # Подтверждение прочтения
                 message_id = data.get("message_id")
-                chat_id = data.get("chat_id")
-                
+                if message_id is None:
+                    continue
+                message_id = int(message_id)
+
                 await message_service.mark_as_read(message_id, user_id)
                 
                 # Уведомляем отправителя

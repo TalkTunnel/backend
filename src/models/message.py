@@ -26,7 +26,11 @@ class Message(Base):
     
     # Relationships
     chat = relationship("Chat", back_populates="messages")
-    sender = relationship("User", foreign_keys=[sender_id])
+    sender = relationship(
+        "User",
+        foreign_keys=[sender_id],
+        back_populates="sent_messages",
+    )
     reply_to = relationship("Message", remote_side=[id], backref="replies")
     deliveries = relationship("MessageDelivery", back_populates="message", cascade="all, delete-orphan")
 

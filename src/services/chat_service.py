@@ -4,6 +4,8 @@ from typing import List, Optional
 from src.models.chat import Chat, ChatParticipant
 from src.models.user import User
 from src.models.message import Message
+
+
 class ChatService:
     def __init__(self, db: AsyncSession):
         self.db = db
@@ -98,8 +100,6 @@ class ChatService:
             "chat": chat,
             "messages": messages[::-1]  # Переворачиваем для хронологического порядка
         }
-        
-# Добавьте эти методы в существующий ChatService
 
     async def check_participant(self, chat_id: int, user_id: int) -> bool:
         """Проверка, является ли пользователь участником чата"""

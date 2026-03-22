@@ -34,3 +34,8 @@ class User(Base):
         back_populates="participants",
         overlaps="participant_links,chat_memberships,chat,user",
     )
+    sent_messages = relationship(
+        "Message",
+        back_populates="sender",
+        foreign_keys="Message.sender_id",
+    )

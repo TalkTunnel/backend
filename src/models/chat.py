@@ -44,3 +44,8 @@ class Chat(Base):
         back_populates="chats",
         overlaps="participant_links,chat_memberships,chat,user",
     )
+    messages = relationship(
+        "Message",
+        back_populates="chat",
+        cascade="all, delete-orphan",
+    )

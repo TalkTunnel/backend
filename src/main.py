@@ -23,7 +23,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
 app.include_router(users.router, prefix=settings.API_V1_PREFIX)
 app.include_router(chats.router, prefix=settings.API_V1_PREFIX)
-app.include_router(websocket.router, prefix="/ws", tags=["websocket"])
+app.include_router(websocket.router, tags=["websocket"])
 
 @app.get("/")
 async def root():
