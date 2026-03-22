@@ -5,9 +5,8 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
-# Импортируйте ваши модели
-from src.core.database import Base  # замените на путь к вашим моделям
-from src.core.config import settings  # если используете настройки
+from src.core.database import Base
+import src.models  # noqa: F401 — регистрирует таблицы в Base.metadata для autogenerate
 
 config = context.config
 
