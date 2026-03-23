@@ -31,6 +31,8 @@ class ChatResponse(BaseModel):
     is_encrypted: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
+    participant_ids: List[int] = Field(default_factory=list)
+    participant_usernames: List[str] = Field(default_factory=list)
 
 class ChatParticipantResponse(BaseModel):
     chat_id: int

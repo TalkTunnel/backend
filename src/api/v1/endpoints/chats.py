@@ -12,6 +12,19 @@ from src.models.user import User
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
+
+def _serialize_chat(chat, participants: List[dict]) -> dict:
+    return {
+        "id": chat.id,
+        "type": chat.type,
+        "name": chat.name,
+        "is_encrypted": chat.is_encrypted,
+        "created_at": chat.created_at,
+        "updated_at": chat.updated_at,
+        "participant_ids": [p["id"] for p in participants],
+        "participant_usernames": [p["username"] for p in participants],
+    }
+
 @router.get("/", response_model=List[ChatResponse])
 async def get_my_chats(
     current_user: User = Depends(get_current_user),
@@ -20,7 +33,14 @@ async def get_my_chats(
     """Получить все чаты пользователя"""
     chat_service = ChatService(db)
     chats = await chat_service.get_user_chats(current_user.id)
-    return chats
+    participants_map = await chat_service.get_participants_map_for_chats(
+        [chat.id for chat in chats]
+    )
+
+    return [
+        _serialize_chat(chat, participants_map.get(chat.id, []))
+        for chat in chats
+    ]
 
 @router.post("/private/{user_id}", response_model=ChatResponse)
 async def create_private_chat(
@@ -37,7 +57,8 @@ async def create_private_chat(
     
     chat_service = ChatService(db)
     chat = await chat_service.create_private_chat(current_user.id, user_id)
-    return chat
+    participants_map = await chat_service.get_participants_map_for_chats([chat.id])
+    return _serialize_chat(chat, participants_map.get(chat.id, []))
 
 @router.get("/{chat_id}", response_model=ChatResponse)
 async def get_chat(
@@ -51,8 +72,10 @@ async def get_chat(
     
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
-    
-    return chat["chat"]
+
+    chat_model = chat["chat"]
+    participants_map = await chat_service.get_participants_map_for_chats([chat_model.id])
+    return _serialize_chat(chat_model, participants_map.get(chat_model.id, []))
 
 @router.get("/{chat_id}/messages", response_model=List[MessageResponse])
 async def get_chat_messages(
