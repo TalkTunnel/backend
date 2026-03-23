@@ -36,6 +36,7 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+Start.sh
 
 # Local websocket payload examples
 websocket-examples.json
