@@ -161,3 +161,11 @@ async def websocket_endpoint(
     except Exception as e:
         logger.error(f"WebSocket error for user {user_id}: {e}")
         manager.disconnect(websocket)
+
+@router.get("/ws_test")
+async def ws_test():
+    from fastapi.responses import FileResponse
+    import os
+
+    file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../websocket-test.html"))
+    return FileResponse(file_path, media_type='text/html')
