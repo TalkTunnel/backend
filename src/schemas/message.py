@@ -31,9 +31,9 @@ class MessageResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     
-    sender: Optional[UserPublic]
-    attachments: List["AttachmentResponse"] = []
-    reactions: List["ReactionResponse"] = []
+    sender: Optional[UserPublic] = None
+    attachments: List["AttachmentResponse"] = Field(default_factory=list)
+    reactions: List["ReactionResponse"] = Field(default_factory=list)
     
     class Config:
         from_attributes = True

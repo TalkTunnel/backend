@@ -1,3 +1,5 @@
+import json
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
@@ -71,5 +73,32 @@ async def get_chat_messages(
     
     if not chat_data:
         raise HTTPException(status_code=404, detail="Chat not found")
-    
-    return chat_data["messages"]
+
+    response_messages = []
+    for message in chat_data["messages"]:
+        encrypted_content = message.encrypted_content
+        if isinstance(encrypted_content, str):
+            try:
+                encrypted_content = json.loads(encrypted_content)
+            except json.JSONDecodeError:
+                encrypted_content = {"raw": encrypted_content}
+
+        response_messages.append(
+            {
+                "id": message.id,
+                "chat_id": message.chat_id,
+                "sender_id": message.sender_id,
+                "encrypted_content": encrypted_content,
+                "message_type": message.message_type,
+                "status": message.status,
+                "reply_to_id": message.reply_to_id,
+                "is_edited": message.is_edited,
+                "created_at": message.created_at,
+                "updated_at": message.updated_at,
+                "sender": None,
+                "attachments": [],
+                "reactions": [],
+            }
+        )
+
+    return response_messages
