@@ -36,4 +36,3 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
-websocket-test.html
