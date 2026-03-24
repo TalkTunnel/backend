@@ -6,6 +6,9 @@ from src.schemas.user import (
     UserPublic,
     Token,
     TokenPayload,
+    VerifyEmailRequest,
+    ResendOtpRequest,
+    RegisterOtpResponse,
     UserUpdate,
     UserProfile,
 )
@@ -46,6 +49,9 @@ __all__ = [
     "UserPublic",
     "Token",
     "TokenPayload",
+    "VerifyEmailRequest",
+    "ResendOtpRequest",
+    "RegisterOtpResponse",
     "UserUpdate",
     "UserProfile",
     # Chat schemas
