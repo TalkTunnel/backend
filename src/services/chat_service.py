@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import intersect, select, and_
-from typing import List, Optional
+from typing import Dict, List, Optional
 from src.models.chat import Chat, ChatParticipant
 from src.models.user import User
 from src.models.message import Message
@@ -127,3 +127,25 @@ class ChatService:
             .where(ChatParticipant.chat_id == chat_id)
         )
         return result.scalars().all()
+
+    async def get_participants_map_for_chats(
+        self, chat_ids: List[int]
+    ) -> Dict[int, List[dict]]:
+        """Возвращает участников для списка чатов: {chat_id: [{id, username}, ...]}"""
+        if not chat_ids:
+            return {}
+
+        result = await self.db.execute(
+            select(ChatParticipant.chat_id, User.id, User.username)
+            .join(User, User.id == ChatParticipant.user_id)
+            .where(ChatParticipant.chat_id.in_(chat_ids))
+            .order_by(ChatParticipant.chat_id.asc(), User.id.asc())
+        )
+
+        participants_map: Dict[int, List[dict]] = {chat_id: [] for chat_id in chat_ids}
+        for chat_id, user_id, username in result.all():
+            participants_map.setdefault(chat_id, []).append(
+                {"id": user_id, "username": username}
+            )
+
+        return participants_map
