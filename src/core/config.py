@@ -26,6 +26,9 @@ class Settings(BaseSettings):
 
     # Redis
     REDIS_URL: str = Field(..., description="redis://host:6379/0")
+    OTP_TTL_SECONDS: int = 600
+    OTP_RESEND_COOLDOWN_SECONDS: int = 60
+    OTP_MAX_ATTEMPTS: int = 5
 
     # JWT
     SECRET_KEY: str = Field(..., min_length=16, description="Секрет для подписи JWT")
@@ -37,6 +40,14 @@ class Settings(BaseSettings):
     APP_NAME: str = "Messenger"
     DEBUG: bool = False
     API_V1_PREFIX: str = "/api/v1"
+
+    # Email (SMTP)
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM: str = ""
+    SMTP_USE_TLS: bool = True
 
     # CORS: через запятую, без пробелов или с пробелами — обрежутся в main
     CORS_ORIGINS: str = Field(
