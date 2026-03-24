@@ -62,6 +62,21 @@ class TokenPayload(BaseModel):
     exp: datetime
     type: str  # "access" or "refresh"
 
+
+class VerifyEmailRequest(BaseModel):
+    email: EmailStr
+    otp: str = Field(..., min_length=4, max_length=10)
+
+
+class ResendOtpRequest(BaseModel):
+    email: EmailStr
+
+
+class RegisterOtpResponse(BaseModel):
+    message: str
+    email: EmailStr
+    expires_in: int
+
 class UserUpdate(BaseModel):
     full_name: Optional[str] = Field(None, max_length=100)
     bio: Optional[str] = Field(None, max_length=500)
