@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.core.config import settings
 from src.api.v1.endpoints import auth, users, chats
 from src.api.v1.endpoints import websocket
+from src.core.redis_client import close_redis
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -32,3 +33,8 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+
+@app.on_event("shutdown")
+async def on_shutdown():
+    await close_redis()
