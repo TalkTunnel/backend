@@ -63,6 +63,20 @@ class UserService:
             )
         )
         return result.scalar_one_or_none()
+
+    async def get_user_by_email(self, email: str) -> Optional[User]:
+        """Поиск пользователя по email"""
+        result = await self.db.execute(
+            select(User).where(User.email == email)
+        )
+        return result.scalar_one_or_none()
+
+    async def mark_user_verified(self, user: User) -> User:
+        """Подтверждение email пользователя"""
+        user.is_verified = True
+        await self.db.commit()
+        await self.db.refresh(user)
+        return user
     
     async def get_user_by_id(self, user_id: int) -> Optional[User]:
         """Получение пользователя по ID"""
